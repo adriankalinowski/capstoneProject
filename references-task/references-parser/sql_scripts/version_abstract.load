@@ -1,0 +1,29 @@
+LOAD CSV
+    FROM stdin WITH ENCODING utf-8 HAVING FIELDS (associated_abstract, pubmed_id, version)
+    
+    INTO postgresql:///?temp.article_abstract_versions (associated_abstract, pubmed_id, version)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    AFTER LOAD DO
+      $$ INSERT INTO reference.article_abstract_versions(pubmed_id, version, associated_abstract) --move old version of abstract to article_abstract_versions for each pubmed_id which has a new version in the working table
+         SELECT a.pubmed_id, a.version, a.associated_abstract
+         FROM reference.abstract_article a
+         WHERE pubmed_id IN (
+            SELECT DISTINCT pubmed_id
+            FROM temp.article_abstract_versions) $$,
+      $$ UPDATE reference.abstract_article a --update the abstract for the latest version of the reference
+         SET version=v.version, associated_abstract=v.associated_abstract
+         FROM temp.article_abstract_versions v
+         WHERE a.pubmed_id = v.pubmed_id AND (v.pubmed_id, v.version) IN (
+         SELECT  pubmed_id, max(version) as version
+         FROM temp.article_abstract_versions
+         GROUP BY pubmed_id) $$,
+      $$ INSERT INTO reference.article_abstract_versions(pubmed_id, version, associated_abstract) --put any other new versions (which are not the newest) into the article_abstract_versions table
+         SELECT pubmed_id, version, associated_abstract
+         FROM temp.article_abstract_versions v
+         WHERE version <> (
+            SELECT version
+            FROM reference.article a
+            WHERE v.pubmed_id = a.pubmed_id) $$;

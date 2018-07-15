@@ -1,0 +1,15 @@
+LOAD CSV
+    FROM  /data/journal_cache.csv WITH ENCODING utf-8 HAVING FIELDS (nlm_unique_id, journal_title, issn_print [null if blanks], issn_online [null if blanks], iso_abbr [null if blanks], med_abbr [null if blanks], journal_id [null if blanks], start_year [null if blanks], end_year [null if blanks], activity_flag [null if blanks], alias [null if blanks])
+    	
+    INTO postgresql:///?temp.journal(nlm_unique_id, journal_title, issn_print, issn_online, iso_abbr, med_abbr, journal_id, start_year, end_year, activity_flag, alias)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+
+	AFTER LOAD DO
+	  $$ INSERT INTO reference.journal(nlm_unique_id, journal_title, issn_print, issn_online, iso_abbr, med_abbr, journal_id, start_year, end_year, activity_flag, alias, source)
+		SELECT nlm_unique_id, journal_title, issn_print, issn_online, iso_abbr, med_abbr, journal_id, start_year, end_year, activity_flag, alias, source
+		FROM temp.journal
+		ON CONFLICT (nlm_unique_id) DO NOTHING; $$,
+	  $$ TRUNCATE TABLE temp.journal;
+	  $$;

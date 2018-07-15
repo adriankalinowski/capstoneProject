@@ -1,0 +1,8 @@
+LOAD CSV
+    FROM stdin WITH ENCODING utf-8 HAVING FIELDS (pubmed_id, version, title [null if blanks], is_translated, publication_date [null if blanks, date format 'YYYY-MM-DD'], medline_date [null if blanks], nlm_unique_id, journal, author_list [null if "[]"], keywords [null if "{}"], article_ids [null if "[]"])
+    
+    INTO postgresql:///?temp.article_versions (pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids)
+    
+    WITH --on-error-stop, 
+    	fields optionally enclosed by '"',
+        fields terminated by '\t';

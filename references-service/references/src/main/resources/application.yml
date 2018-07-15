@@ -1,0 +1,17 @@
+spring:
+  datasource:
+      url: jdbc:postgresql://192.168.99.100/capstone
+      username: cloud
+      password: cloud
+      driver-class-name: org.postgresql.Driver
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:  
+      ddl-auto: validate
+    database-platform: edu.wayne.capstone.references.config.JsonbPostgreSQL9Dialect
+    properties:
+      hibernate: 
+        default_schema: reference
+        format_sql: true
+

@@ -1,0 +1,20 @@
+LOAD CSV 
+    FROM stdin WITH ENCODING utf-8 HAVING FIELDS (chemical_compound_id, chemical_compound, pubmed_id)
+    
+    INTO postgresql:///?temp.chemical_compound (chemical_compound_id, chemical_compound, pubmed_id)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+    
+    AFTER LOAD DO
+      $$ INSERT INTO reference.chemical_compound(chemical_compound_id, chemical_compound)
+        SELECT chemical_compound_id, chemical_compound
+        FROM temp.chemical_compound ON CONFLICT DO NOTHING; $$,
+      $$ INSERT INTO reference.article_chemical_compound(pubmed_id, chemical_compound_id)
+         SELECT pubmed_id, chemical_compound_id
+         FROM temp.chemical_compound; $$,
+      $$ CREATE UNIQUE INDEX idx_chemical_compound_id_pubmed_id ON reference.article_chemical_compound(chemical_compound_id, pubmed_id); $$,
+      $$ CREATE INDEX idx_chemical_compound_pubmed_id ON reference.article_chemical_compound(pubmed_id, chemical_compound_id) $$,
+      $$ ALTER TABLE reference.article_chemical_compound ADD FOREIGN KEY (chemical_compound_id) REFERENCES reference.chemical_compound(chemical_compound_id); $$,
+      $$ ALTER TABLE reference.article_chemical_compound ADD FOREIGN KEY (pubmed_id) REFERENCES reference.article(pubmed_id) ON DELETE CASCADE 
+     $$;

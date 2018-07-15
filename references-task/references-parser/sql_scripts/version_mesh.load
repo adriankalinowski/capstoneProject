@@ -1,0 +1,23 @@
+LOAD CSV
+	FROM stdin WITH ENCODING utf-8 HAVING FIELDS (term_id, term, pubmed_id, version)
+	
+	INTO postgresql:///?temp.mesh_versions (term_id, term, pubmed_id, version)
+	
+	WITH fields optionally enclosed by '"',
+		fields terminated by '\t'
+	
+	AFTER LOAD DO
+	  $$ INSERT INTO reference.mesh --insert any new mesh terms into the mesh table
+		 SELECT DISTINCT (term_id, term)
+		 FROM temp.mesh_versions
+		 ON CONFLICT DO NOTHING $$,
+	  $$ INSERT INTO reference.mesh_article --insert any new mesh to article relationships into mesh_article
+		 SELECT pubmed_id, term_id
+		 FROM temp.mesh_versions v
+		 WHERE (pubmed_id, version) IN (
+		 SELECT  pubmed_id, max(version) as version
+		 FROM temp.mesh_versions
+		 GROUP BY pubmed_id)
+		 ON CONFLICT DO NOTHING $$,
+	  $$ TRUNCATE TABLE temp.mesh_versions 
+	$$;

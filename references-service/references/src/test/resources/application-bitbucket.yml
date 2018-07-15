@@ -1,0 +1,9 @@
+eureka:
+  client:
+    registerWithEureka: false
+    enabled: false
+spring:
+  datasource:
+      url: jdbc:postgresql://localhost:5432/pipelines
+      schema: classpath:sql-scripts/schema.sql
+      data: classpath:sql-scripts/data.sql

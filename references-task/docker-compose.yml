@@ -1,0 +1,28 @@
+version: '3'
+services:
+  references-task:
+    build: ./references-parser
+    image: advaitacapstone/references-task:latest
+    volumes:
+      - referenceData:/data/
+    environment:
+      - POSTGRES_HOST='192.168.99.100'
+      - POSTGRES_USER=cloud
+      - POSTGRES_PASSWORD=cloud
+      - POSTGRES_DB=capstone
+      - DEFAULT_UPDATE_URL=https://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/
+      - DEFAULT_FILE_NAME=pubmed18n
+      - DEFAULT_FILE_END=.xml.gz
+  pg:
+    build: ./database
+    image: advaitacapstone/postgres-references:9.6.6
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=cloud
+      - POSTGRES_PASSWORD=cloud
+      - POSTGRES_DB=capstone
+    volumes:
+      - referenceData:/data/
+volumes:
+  referenceData:

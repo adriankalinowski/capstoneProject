@@ -1,0 +1,116 @@
+For complete descriptions and more in-depth mappings, check out the following links:
+Document Type Definition - https://www.nlm.nih.gov/databases/dtd/index.html
+Element Definitions - https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html
+
+script.py:
+
+XML Path/Field							Table			Column			Type		Mandatory	Filterable	Sortable	Sanitized
+MC/PMID								article			pubmed_id		Integer		Yes		Yes		Yes		No
+MC/Article/VernacularTitle					article		journal(article_title_vernacular) JSONB		No		Yes		Yes		No
+MC/Article/Journal/JournalIssue/Volume				article			journal(volume)		JSONB		No		Yes		Yes		No
+MC/Article/Journal/JournalIssue/Issue				article			journal(issue)		JSONB		No		Yes		Yes		No
+MC/Article/Journal/JournalIssue.attrib(CitedMedium)		article			journal(cited_medium)	JSONB		No		Yes		Yes		No
+MC/Article/Pagination/MedlinePgn				article			journal(pagination)	JSONB		Yes*		Yes		Yes		No
+MC/Article/ELocationID						article			journal(elocationid)	JSONB		Yes*		Yes		Yes		No
+MC/Article/ELocationID.attrib(EIdType)				article			journal(eid_type)	JSONB		Yes*		Yes		Yes		No
+MC/Article/ELocationID.attrib(ValidYN)				article			journal(valid_eid)	JSONB		Yes*		Yes		Yes		No
+MC/Article/VernacularTitle					article			journal(vernacular)	JSONB		No
+MC/Article/Journal/PubDate					article			publication_date	Date		No		Yes		Yes		Yes
+MC/Article/Journal/MedlineDate					article			medline_date		Varchar		No		Yes		No		No
+MC/Article/Journal/ISSN						article			journal(article_id)	JSONB		No		Yes		Yes		No
+MC/Article/ArticleTitle						article			title			Varchar		No		Yes		Yes		Yes
+MC/Article/AuthorList/Author/ForeName				article			author_list(ForeName)	JSONB		No		Yes		No		No
+MC/Article/AuthorList/Author/LastName				article			author_list(Last_name)	JSONB		No		Yes		No		No
+MC/KeywordList/Keyword						article			keywords(Keyword)	JSONB		No		Yes		No		No
+MC/KeywordList/Keyword.attrib(MajorTopicYN)			article			keywords(Major)		JSONB		No		Yes		No		No
+PubmedData/ArticleIdList/ArticleId				article			article_ids(article_id)	JSONB		No		Yes		No		No
+PubmedData/ArticleIdList/ArticleId.attrib(IdType)		article			article_ids(id_type)	JSONB		No		Yes		No		No
+MC/MeshHeadingList/MeshHeading/DescriptorName			mesh			term			Varchar		No		Yes		Yes		No
+MC/MeshHeadingList/MeshHeading/DescriptorName.attrib(UI)	mesh			term_id			Varchar		Yes		Yes		Yes		No
+MC/ChemicalList/Chemical/NameOfSubstance			chemical_compound	chemical_compound	Varchar		No		Yes		Yes		No
+MC/ChemicalList/Chemical/NameOfSubstance.attrib(UI)		chemical_compound	chemical_compound_id	Varchar		Yes		Yes		Yes		No
+MC/Article/Abstract/AbstractText				abstract		abstract(abstract)	JSONB		No		Yes		Yes		Yes
+MC/Article/Abstract/AbstractText.attrib(NlmCategory)		abstract		abstract(nlmcategory)	JSONB		No		Yes		Yes		No
+MC/Article/Abstract/AbstractText.attrib(Label)			abstract		abstract(label)		JSONB		No		Yes		Yes		No
+
+*At least one of MedlinePgn or ELocationID and its attributes are mandatory, but not both at the same time. 
+
+journal.py:
+
+Not extracting in XML, but extracting in plain text via J_Medline.txt:
+Term			XML Path/Field							Description
+ISSN			MC/Article/Journal/ISSN						ISSN number of the journal the article is associated with (already extracted in the journal parser)
+ISSN Type		MC/Article/Journal/ISSN.attrib(IssnType)			Type of ISSN given (Print/Electronic/Undetermined) (already extracted in the journal parser)
+Journal Title		MC/Article/Journal/Title					Title of the journal (already extracted in the journal parser)
+Journal Title Abbr.	MC/Article/Journal/ISOAbbreviation				Abbreviation of the journal title (already extracted in the journal parser)
+NLM Unique ID		MC/MedlineJournalInfo/NlmUniqueID				Unique identifier for journals
+
+
+Not Using:
+
+Term			XML Path/Field							Description
+Date Created Year	MC/DateCreated/Year						Year when the processing of the reference began
+Date Created Month	MC/DateCreated/Month						Month when the processing of the reference began
+Date Created Day	MC/DateCreated/Day						Day when the processing of the reference began
+Date Completed Year	MC/DateCompleted/Year						Year when the processing of the reference finished
+Date Completed Month	MC/DateCompleted/Month						Month when the processing of the reference finished
+Date Completed Day	MC/DateCompleted/Day						Day when the processing of the reference finished
+Date Revised Year	MC/DateRevised/Year						Year when the reference was revised
+Date Revised Moth	MC/DateRevised/Month						Month when the reference was revised
+Date Revised Day	MC/DateRevised/Day						Day when the reference was revised
+Copyright		MC/Article/Abstract/CopyrightInformation			Contains copyright statement
+Language		MC/Article/Language						The language in which the article is written
+Complete DataBank List	MC/Article/DataBankList.attrib(CompleteYN)			Represents whether the NLM has entered all databank items that appear in the published article
+Name of DataBank	MC/Article/DataBankList/DataBank/DataBankName			The name of the databank that is referenced
+Accession Number	./DataBankName/AccessionNumberList/AccessionNumber		Accession number inside DataBank
+Complete Grant List	MC/Article/GrantList.attrib(CompleteYN)				Represents whether the NLM has entered all grant items that appear in the published article
+Grant ID		MC/Article/GrantList/Grant/GrantID				ID of the grant
+Grant Acronym		MC/Article/GrantList/Grant/Acronym				Acronym of the grant
+Grant Agency		MC/Article/GrantList/Grant/Agency				Agency that gave out the grant
+Grant Country		MC/Article/GrantList/Grant/Country				Country the grant came from
+Publication Type	MC/Article/PublicationTypeList/PublicationType			Type of article indexed for MEDLINE
+Publication Type ID	MC/Article/PublicationTypeList/PublicationType.attrib(UI)	The UI attribute carries the MeSH unique identifiers for publication types
+Article Date Year	MC/Article/ArticleDate/Year					Year that the publisher made an electronic version of the article
+Article Date Month	MC/Article/ArticleDate/Month					Month that the publisher made an electronic version of the article
+Article Date Day	MC/Article/ArticleDate/Day					Day that the publisher made an electronic version of the article
+Article Date Type	MC/Article/ArticleDate.attrib(DateType)				Always "Electronic"
+Country			MC/MedlineJournalInfo/Country					Country in which the journal was published
+Medline TA		MC/MedlineJournalInfo/MedlineTA					Standard abbreviation of journal title
+ISSN Linking		MC/MedlineJournalInfo/ISSNLinking				ISSN designated by the ISSN Network to enable co-location or linking among the different media versions of a continuing resource
+Chemical Registry #	MC/ChemicalList/Chemical/RegistryNumber				Registry number of the chemical
+Suppl Mesh Name		MC/SupplMeshList/SupplMeshName					Protocol Class 2 Supplementary Concept Record (SCR) terms and Disease Class 3 SCR terms
+Suppl Mesh Type		MC/SupplMeshList/SupplMeshName.attrib(Type)			Distinguishes Class 2 from Class 3 terms
+Suppl Mesh UI		MC/SupplMeshList/SupplMeshName.attrib(UI)			Carries the MeSH unique identifiers for names of the substances
+Citation Subset		MC/CitationSubset						Identifies the subset for which MEDLINE records from certain journal lists or records on specialized topics were created
+Comment Correction Type	MC/CommentsCorrectionsList/CommentsCorrections.attrib(RefType)	Type of reference
+Reference Source	MC/CommentsCorrectionsList/CommentsCorrections/RefSource
+CC PMID			MC/CommentsCorrectionsList/CommentsCorrections/PMID		PMID of the article associated in the comment correction
+CCM PMID Version	./CommentsCorrections/PMID.attrib(VersionID)			Version of the PMID of the article associated in the comment correction
+CC Note			MC/CommentsCorrectionsList/CommentsCorrections/Note		Infrequently clarifies the data in the comment correction
+Gene Symbol		MC/GeneSymbolList/GeneSymbol					Contains the "symbol" or abbreviated form of gene names as reported in the literature
+Num. of Ref.		MC/NumberOfReferences						Appears on records indexed with Review, Consensus Development Conference, Consensus Development Conference, NIH, or Meta-Analysis as a <PublicationType>. Not populated anymore.
+Personal First Name	MC/PersonalNameSubjectList/PersonalNameSubject/ForeName		For citations that contain a biographical note or obituary, or are entirely about the life or work of an individual or individual. First Name
+Personal Last Name	MC/PersonalNameSubjectList/PersonalNameSubject/LastName		Last Name
+Initials		MC/PersonalNameSubjectList/PersonalNameSubject/Initials		Initials of name
+Other ID		MC/OtherID							Contains many different types of ID's. See link for description
+Other ID Source		MC/OtherID.attrib(Source)					Source of the other ID
+Other Abstract Source	MC/OtherAbstract.attrib(Source)					Source of the other abstract
+Other Abstract Lang.	MC/OtherAbstract.attrib(Language)				Language the other abstract is in
+Other Abstract		MC/OtherAbstract/AbstractText					Text of the other abstract
+Space Flight Mission	MC/SpaceFlightMission						Contains the space flight mission name and/or number when results of research conducted in space are covered in a publication. Not used on new references
+COI Statement		MC/CoiStatement							Conflict of interest statement given by publisher
+Investigator Valid	MC/InvestigatorList/Investigator.attrib(ValidYN)		States whether or not the investigator is valid
+Investigator First Name	MC/InvestigatorList/Investigator/ForeName			First name of investigator
+Investigator Last Name	MC/InvestigatorList/Investigator/LastName			Last name of investigator
+Investigator Initials	MC/InvestigatorList/Investigator/Initials			Initials of investigator
+Investigator Suffix	MC/InvestigatorList/Investigator/Suffix				Suffix of investigator
+Affiliation		MC/InvestigatorList/Investigator/AffiliationInfo/Affiliation	Affiliation the investigator has
+General Note		MC/GeneralNote							Contains supplemental or descriptive information related to the document cited in the MEDLINE record
+General Note Owner	MC/GeneralNote.attrib(Owner)					Owner of the general note
+PubmedPubDate Year	PubmedData/History/PubmedPubDate/Year				Specifies a Year significant to either the article's history or the citation's processing
+PubmedPubDate Month	PubmedData/History/PubmedPubDate/Month				Specifies a Month significant to either the article's history or the citation's processing
+PubmedPubDate Day	PubmedData/History/PubmedPubDate/Day				Specifies a Day significant to either the article's history or the citation's processing
+PubmedPubDate Hour	PubmedData/History/PubmedPubDate/Hour				Specifies a Hour significant to either the article's history or the citation's processing
+PubmedPubDate Minute	PubmedData/History/PubmedPubDate/Minute				Specifies a Minute significant to either the article's history or the citation's processing
+PubmedPubDate Second	PubmedData/History/PubmedPubDate/Second				Specifies a Second significant to either the article's history or the citation's processing
+Publication Status	PubmedData/PublicationStatus				Indicates publication status of the article

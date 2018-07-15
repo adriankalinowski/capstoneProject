@@ -1,0 +1,97 @@
+LOAD CSV
+    FROM '/data/versions_article.csv' WITH ENCODING utf-8 HAVING FIELDS (pubmed_id, version, title, is_translated, publication_date null if blanks date format 'MM-DD-YYYY', medline_date null if blanks, nlm_unique_id, journal, author_list)
+    
+    INTO postgresql:///?temp.article_versions (pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    SET client_encoding to 'utf-8'
+    
+    BEFORE LOAD DO
+        $$ CREATE TABLE IF NOT EXISTS temp.article_versions
+            (
+                pubmed_id INTEGER,
+                version INTEGER,
+                title VARCHAR,
+                is_translated BOOLEAN,
+                publication_date DATE,
+                medline_date VARCHAR,
+                nlm_unique_id VARCHAR,
+                journal JSONB,
+                author_list JSONB
+            ) 
+        $$,
+
+        $$ CREATE TABLE IF NOT EXISTS temp.article_abstract_versions
+            (
+                pubmed_id INTEGER NOT NULL,
+                version INTEGER,
+                associated_abstract JSONB
+            ) 
+        $$,
+
+        $$ CREATE TABLE IF NOT EXISTS temp.chemical_versions
+            (
+                chemical_compound_id VARCHAR,
+                chemical_compound VARCHAR,
+                pubmed_id INTEGER,
+                version INTEGER
+            ) 
+        $$,
+
+        $$ CREATE TABLE IF NOT EXISTS temp.mesh_versions
+            (
+                term_id VARCHAR,
+                term VARCHAR,
+                pubmed_id INTEGER,
+                version INTEGER
+            ) 
+        $$,
+
+        $$ CREATE TABLE IF NOT EXISTS temp.deleted_versions
+            (
+                pubmed_id INTEGER UNIQUE NOT NULL,
+                version INTEGER NOT NULL
+            ) 
+        $$;
+    
+LOAD CSV
+    FROM '/data/versions_abstract.csv' WITH ENCODING utf-8 HAVING FIELDS (associated_abstract, pubmed_id, version)
+    
+    INTO postgresql:///?temp.article_abstract_versions (associated_abstract, pubmed_id, version)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    SET client_encoding to 'utf-8';
+    
+LOAD CSV
+    FROM '/data/versions_chemical.csv' WITH ENCODING utf-8 HAVING FIELDS (chemical_compound_id, chemical_compound, pubmed_id, version)
+    
+    INTO postgresql:///?temp.chemical_versions (chemical_compound_id, chemical_compound, pubmed_id, version)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    SET client_encoding to 'utf-8';
+    
+LOAD CSV
+    FROM '/data/versions_mesh.csv' WITH ENCODING utf-8 HAVING FIELDS (term_id, term, pubmed_id, version)
+    
+    INTO postgresql:///?temp.mesh_versions (term_id, term, pubmed_id, version)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    SET client_encoding to 'utf-8';
+
+LOAD CSV
+    FROM '/data/versions_deleted.csv' WITH ENCODING utf-8 HAVING FIELDS (pubmed_id, version)
+    
+    INTO postgresql:///?temp.deleted_versions (pubmed_id, version)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    SET client_encoding to 'utf-8';

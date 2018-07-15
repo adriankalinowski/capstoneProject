@@ -1,0 +1,43 @@
+BEGIN;
+
+--retrieve all articles
+--without joins
+SELECT article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ limit 100;
+
+--select title like
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ where lower(article0_.title) like '%purification%' escape '!' limit 100;
+
+--select title match
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ where article0_.title='Reviewer acknowledgement.' limit 100;
+ 
+--where author
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ left outer join reference.global_search article0_2_ on article0_.pubmed_id=article0_2_.pubmed_id where author_lastname_tsv @@ to_tsquery('Chen & Scott') limit 100; 
+
+
+--Where pubmed_id IN
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ where article0_.pubmed_id in ( 1, 100, 200, 300, 400, 500, 1000, 1100, 1200, 1300, 2, 101, 201, 301, 401, 501, 1001, 1101, 1201, 1301,3, 103, 203, 303, 403, 503, 1003, 1103, 1203, 1303, 4, 104, 204, 304, 404, 504, 1004, 1104, 1204, 1304,5, 105, 205, 305, 405, 505, 1005, 1105, 1205, 1305, 6, 106, 206, 306, 406, 506, 1006, 1106, 1206, 1306,7, 107, 207, 307, 407, 507, 1007, 1107, 1207, 1307, 8, 108, 208, 308, 408, 508, 1008, 1108, 1208, 1308,17, 117, 217, 317, 417, 517, 1017, 11107, 1217, 1317, 28, 128, 228, 328, 428, 528, 1028, 1128, 1228, 1328 ) limit 100;
+
+--filter by publication date then sort
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ where article0_.publication_date<='1975-01-01' limit 100;
+
+--article like
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ where lower(article0_.title) like '%cancer%' escape '!' limit 100;
+
+
+--date exact match
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_ from reference.article article0_ where article0_.publication_date='1975-01-01' limit 100;	
+
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_  from reference.article article0_ where lower(article0_.title) like '%purification%' escape '!' order by article0_.publication_date asc limit 100;
+
+--without joins
+select article0_.pubmed_id as pubmed_i1_1_, article0_.author_list as author_l2_1_, article0_.creation_time as creation3_1_, article0_.is_deleted as is_delet4_1_, article0_.is_translated as is_trans5_1_, article0_.nlm_unique_id as nlm_uni12_1_, article0_.journal as journal6_1_, article0_.medline_date as medline_7_1_, article0_.publication_date as publicat8_1_, article0_.title as title9_1_, article0_.update_time as update_10_1_, article0_.version as version11_1_  from reference.article article0_ cross  join reference.journal journal1_  where article0_.nlm_unique_id=journal1_.nlm_unique_id  and ( lower(journal1_.journal_title) like '%medical%' escape '!' ) order by article0_.publication_date desc limit 100;
+
+END;

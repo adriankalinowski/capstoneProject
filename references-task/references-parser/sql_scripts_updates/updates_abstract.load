@@ -1,0 +1,8 @@
+LOAD CSV
+    FROM stdin WITH ENCODING utf-8 HAVING FIELDS (associated_abstract, pubmed_id, version)
+    
+    INTO postgresql:///?temp.abstract (associated_abstract, pubmed_id, version)
+    
+    WITH --on-error-stop, 
+    	fields optionally enclosed by '"',
+        fields terminated by '\t';

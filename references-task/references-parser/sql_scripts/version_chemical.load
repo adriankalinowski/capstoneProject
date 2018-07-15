@@ -1,0 +1,22 @@
+LOAD CSV
+    FROM stdin WITH ENCODING utf-8 HAVING FIELDS (chemical_compound_id, chemical_compound, pubmed_id, version)
+    
+    INTO postgresql:///?temp.chemical_versions (chemical_compound_id, chemical_compound, pubmed_id, version)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+        
+    AFTER LOAD DO
+      $$ INSERT INTO reference.chemical_compound --insert any new chemical compounds into chemical_compound table
+         SELECT DISTINCT (chemical_compound_id, chemical_compound)
+         FROM temp.chemical_versions
+         ON CONFLICT DO NOTHING $$,
+      $$ INSERT INTO reference.article_chemical_compound --isnert any new relationships into article_chemical_compound table
+         SELECT pubmed_id, chemical_compound_id
+         FROM temp.chemical_versions v1
+         WHERE (pubmed_id, version) IN (
+         SELECT  pubmed_id, max(version) as version
+         FROM temp.chemical_versions
+         GROUP BY pubmed_id)
+         ON CONFLICT DO NOTHING $$,
+      $$ TRUNCATE TABLE temp.chemical_versions $$;

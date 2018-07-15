@@ -1,0 +1,26 @@
+# This is a sample build configuration for Maven.
+# Check our guides at https://confluence.atlassian.com/x/VYk8Lw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: maven:3.3.9
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - maven
+        script: # Modify the commands below to build your repository.
+          - mvn -B clean package -f registry/pom.xml
+          - mvn -B clean package -f references/pom.xml -Dspring.profiles.active=bitbucket
+        services: 
+          - postgres
+
+definitions: 
+  services: 
+    postgres: 
+      image: postgres:9.6.6
+      environment: 
+        POSTGRES_DB: 'pipelines'
+        POSTGRES_USER: 'cloud'
+        POSTGRES_PASSWORD: 'cloud'

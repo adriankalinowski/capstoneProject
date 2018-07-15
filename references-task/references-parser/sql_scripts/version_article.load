@@ -1,0 +1,42 @@
+LOAD CSV
+    FROM stdin WITH ENCODING utf-8 HAVING FIELDS (pubmed_id, version, title [null if blanks], is_translated, publication_date [null if blanks, date format 'YYYY-MM-DD'], medline_date [null if blanks], nlm_unique_id, journal, author_list [null if "[]"], keywords [null if "{}"], article_ids [null if "[]"])
+    
+    INTO postgresql:///?temp.article_versions (pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids)
+    
+    WITH fields optionally enclosed by '"',
+        fields terminated by '\t'
+    
+    AFTER LOAD DO
+      $$ INSERT INTO reference.article_versions(pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids) --move old version of reference to article_versions for each pubmed_id which has a new version in the working table before updating the entry
+         SELECT pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids
+         FROM reference.article
+         WHERE pubmed_id IN (
+             SELECT DISTINCT pubmed_id
+             FROM temp.article_versions) $$,
+      $$ DELETE FROM reference.article --delete cascade 
+         WHERE pubmed_id IN (SELECT DISTINCT pubmed_id FROM temp.article_versions); $$,
+      $$ INSERT INTO reference.article(pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids) --insert new references where the version is the max version
+         SELECT pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids
+         FROM temp.article_versions v
+         WHERE (v.pubmed_id, v.version) IN (
+         SELECT  pubmed_id, max(version) as version
+         FROM temp.article_versions
+         GROUP BY pubmed_id) $$,
+      $$ INSERT INTO reference.article_versions(pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids) --move all other versions, which are not the newest table, from the working table to article_versions
+         SELECT pubmed_id, version, title, is_translated, publication_date, medline_date, nlm_unique_id, journal, author_list, keywords, article_ids
+         FROM temp.article_versions v
+         WHERE version <> (
+         SELECT version
+         FROM reference.article a
+         WHERE v.pubmed_id = a.pubmed_id) $$,
+      $$ INSERT INTO reference.global_search (pubmed_id, concatenated_columns_tsv) --insert tsvector columns based on rows in the article table
+         SELECT A.pubmed_id, (setweight(TO_TSVECTOR(COALESCE(A.title, '')), 'A') ||  setweight(TO_TSVECTOR('english', COALESCE((SELECT string_agg(b->>'Keyword',',') FROM jsonb_array_elements(A.keywords->'Keywords') b), '')), 'B') || setweight(TO_TSVECTOR(COALESCE((SELECT string_agg(a->>'LastName', ',') FROM jsonb_array_elements(A.author_list) a), '')), 'C') || 
+         setweight(TO_TSVECTOR(COALESCE(J.journal_title, '')), 'D'))
+     as concatenated_columns_tsv FROM reference.article A, reference.journal J WHERE A.nlm_unique_id=J.nlm_unique_id; $$,
+      $$ CREATE INDEX idx_concatenated_columns_tsv ON reference.global_search USING gin(concatenated_columns_tsv) $$,
+	  $$ CREATE INDEX idx_article_title_btree ON reference.article USING btree(title) $$,
+      $$ CREATE INDEX idx_article_publication_date_desc ON reference.article(publication_date DESC NULLS LAST) $$,
+      $$ CREATE INDEX idx_article_publication_date_asc ON reference.article(publication_date ASC NULLS LAST) $$,
+      $$ CREATE INDEX idx_article_nlm_unique_id ON reference.article USING btree (nlm_unique_id) $$,
+	  $$ CLUSTER reference.article USING idx_article_publication_date_desc;
+    $$;
